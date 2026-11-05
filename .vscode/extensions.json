@@ -1,0 +1,15 @@
+{
+  "recommendations": [
+    "oven.bun-vscode",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "firsttris.vscode-jest-runner",
+    "ms-azuretools.vscode-docker",
+    "redhat.java",
+    "vscjava.vscode-java-pack",
+    "vmware.vscode-spring-boot",
+    "vmware.vscode-boot-dev-pack",
+    "42crunch.vscode-openapi",
+    "humao.rest-client"
+  ]
+}

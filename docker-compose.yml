@@ -1,0 +1,86 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: wager-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: jungle
+      POSTGRES_PASSWORD: jungle_secret
+      POSTGRES_DB: wagering_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./src/infrastructure/database/migrations/001_initial_schema.sql:/docker-entrypoint-initdb.d/001_initial_schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jungle -d wagering_db"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  localstack:
+    image: localstack/localstack:latest
+    container_name: wager-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=sqs
+      - AWS_DEFAULT_REGION=us-east-1
+    volumes:
+      - ./scripts/init-sqs.sh:/etc/localstack/init/ready.d/init-sqs.sh
+
+  app-1:
+    build: .
+    container_name: wager-app-1
+    restart: on-failure
+    ports:
+      - "3001:3000"
+    environment:
+      - PORT=3000
+      - DATABASE_URL=postgres://jungle:jungle_secret@postgres:5432/wagering_db
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    depends_on:
+      postgres:
+        condition: service_healthy
+      localstack:
+        condition: service_started
+
+  app-2:
+    build: .
+    container_name: wager-app-2
+    restart: on-failure
+    ports:
+      - "3002:3000"
+    environment:
+      - PORT=3000
+      - DATABASE_URL=postgres://jungle:jungle_secret@postgres:5432/wagering_db
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    depends_on:
+      postgres:
+        condition: service_healthy
+      localstack:
+        condition: service_started
+
+  app-3:
+    build: .
+    container_name: wager-app-3
+    restart: on-failure
+    ports:
+      - "3003:3000"
+    environment:
+      - PORT=3000
+      - DATABASE_URL=postgres://jungle:jungle_secret@postgres:5432/wagering_db
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    depends_on:
+      postgres:
+        condition: service_healthy
+      localstack:
+        condition: service_started

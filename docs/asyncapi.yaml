@@ -1,0 +1,194 @@
+asyncapi: 3.0.0
+info:
+  title: Wagering SQS and Integration Events Specification
+  version: 1.0.0
+  description: Asynchronous event contracts for AWS SQS message processing and Transactional Outbox integration events.
+
+channels:
+  wagerTransactionsQueue:
+    address: wager-transactions.fifo
+    messages:
+      wagerTransactionRequested:
+        $ref: '#/components/messages/WagerTransactionRequested'
+
+  wagerTransactionsDlq:
+    address: wager-transactions-dlq.fifo
+    messages:
+      wagerTransactionDlqMessage:
+        $ref: '#/components/messages/WagerTransactionRequested'
+
+components:
+  messages:
+    WagerTransactionRequested:
+      name: WagerTransactionRequested
+      title: SQS incoming wager command
+      payload:
+        type: object
+        required:
+          - messageId
+          - type
+          - occurredAt
+          - data
+        properties:
+          messageId:
+            type: string
+          type:
+            type: string
+            const: WagerTransactionRequested
+          occurredAt:
+            type: string
+            format: date-time
+          data:
+            type: object
+            required:
+              - providerId
+              - externalTransactionId
+              - idempotencyKey
+              - playerId
+              - walletId
+              - roundId
+              - gameId
+              - kind
+              - money
+            properties:
+              providerId:
+                type: string
+              externalTransactionId:
+                type: string
+              idempotencyKey:
+                type: string
+              playerId:
+                type: string
+              walletId:
+                type: string
+              roundId:
+                type: string
+              gameId:
+                type: string
+              kind:
+                type: string
+                enum: [BET, WIN, LOSS, REFUND, ROLLBACK]
+              money:
+                type: object
+                required: [amount, currency]
+                properties:
+                  amount:
+                    type: string
+                  currency:
+                    type: string
+              referenceExternalTransactionId:
+                type: string
+
+    WalletBalanceChanged:
+      name: WalletBalanceChanged
+      title: Integration event published via Outbox when balance changes
+      payload:
+        type: object
+        required:
+          - eventId
+          - eventType
+          - aggregateId
+          - correlationId
+          - occurredAt
+          - version
+          - data
+        properties:
+          eventId:
+            type: string
+          eventType:
+            type: string
+            const: WalletBalanceChanged
+          version:
+            type: integer
+            const: 1
+          aggregateId:
+            type: string
+          correlationId:
+            type: string
+          occurredAt:
+            type: string
+          data:
+            type: object
+            required:
+              - walletId
+              - transactionId
+              - direction
+              - money
+              - balanceBefore
+              - balanceAfter
+              - walletVersion
+            properties:
+              walletId:
+                type: string
+              transactionId:
+                type: string
+              direction:
+                type: string
+                enum: [DEBIT, CREDIT]
+              money:
+                $ref: '#/components/schemas/MoneyProps'
+              balanceBefore:
+                $ref: '#/components/schemas/MoneyProps'
+              balanceAfter:
+                $ref: '#/components/schemas/MoneyProps'
+              walletVersion:
+                type: integer
+
+    WagerTransactionProcessed:
+      name: WagerTransactionProcessed
+      title: Integration event published when transaction reaches PROCESSED
+      payload:
+        type: object
+        properties:
+          eventType:
+            type: string
+            const: WagerTransactionProcessed
+          version:
+            type: integer
+            const: 1
+          data:
+            type: object
+            properties:
+              transactionId:
+                type: string
+              walletId:
+                type: string
+              kind:
+                type: string
+              status:
+                type: string
+                const: PROCESSED
+
+    WagerTransactionRejected:
+      name: WagerTransactionRejected
+      title: Integration event published when transaction is rejected by business rule
+      payload:
+        type: object
+        properties:
+          eventType:
+            type: string
+            const: WagerTransactionRejected
+          version:
+            type: integer
+            const: 1
+          data:
+            type: object
+            properties:
+              transactionId:
+                type: string
+              walletId:
+                type: string
+              failureCode:
+                type: string
+              reason:
+                type: string
+
+  schemas:
+    MoneyProps:
+      type: object
+      required: [amount, currency]
+      properties:
+        amount:
+          type: string
+        currency:
+          type: string
