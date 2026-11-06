@@ -70,3 +70,4 @@ describe('Wallet Aggregate Root', () => {
     expect(() => wallet.credit(Money.from({ amount: '10.00', currency: 'EUR' }))).toThrow(CurrencyMismatchError);
   });
 });
+

@@ -120,3 +120,4 @@ async function runLoadTest() {
 runLoadTest().catch((err) => {
   console.error('Load test failed:', err);
 });
+

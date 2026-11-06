@@ -54,3 +54,4 @@ describe('Money Value Object', () => {
     expect(a.equals(b)).toBe(false);
   });
 });
+

@@ -3,3 +3,9 @@ dist/
 .DS_Store
 *.log
 .env
+
+# Local agent configs and private notes
+.claude/
+*.pdf
+.agent/scratch.txt
+

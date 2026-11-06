@@ -131,3 +131,4 @@ describe('WagerTransaction Aggregate', () => {
     expect(rollbackBet.ledgerDirectionFor(betTx)).toBe(LedgerDirection.Credit);
   });
 });
+

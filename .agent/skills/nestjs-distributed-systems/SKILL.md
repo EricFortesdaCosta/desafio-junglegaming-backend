@@ -26,3 +26,4 @@ This skill documents production-ready architecture for distributed, high-concurr
    - Cache-in-memory is strictly forbidden for idempotency.
    - Compound unique index in PostgreSQL on `(provider_id, external_transaction_id)` or `idempotency_key`.
    - SHA-256 canonical payload hashing to distinguish true replay (return cached result) from conflicting payload changes (return 409 Conflict).
+

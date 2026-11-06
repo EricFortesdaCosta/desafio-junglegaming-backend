@@ -33,8 +33,10 @@ describe('HTTP API End-to-End Tests', () => {
     });
 
     const port = 30000 + Math.floor(Math.random() * 5000);
-    baseUrl = `http://localhost:${port}`;
-    server = app.listen(port);
+    baseUrl = `http://127.0.0.1:${port}`;
+    await new Promise((resolve) => {
+      server = app.listen(port, '127.0.0.1', () => resolve(true));
+    });
   });
 
   it('performs full wagering lifecycle via HTTP', async () => {
@@ -152,3 +154,4 @@ describe('HTTP API End-to-End Tests', () => {
     }
   });
 });
+

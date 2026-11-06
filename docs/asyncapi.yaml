@@ -192,3 +192,4 @@ components:
           type: string
         currency:
           type: string
+

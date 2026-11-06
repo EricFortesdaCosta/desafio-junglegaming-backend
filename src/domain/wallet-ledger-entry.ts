@@ -80,3 +80,4 @@ export class WalletLedgerEntry {
     return this.balanceAfter.equals(expectedAfter);
   }
 }
+

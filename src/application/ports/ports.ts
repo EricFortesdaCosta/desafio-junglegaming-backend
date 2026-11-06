@@ -49,3 +49,4 @@ export interface MessagePublisherPort {
 export interface UnitOfWorkPort {
   runInTransaction<T>(work: (trx: TransactionContext) => Promise<T>): Promise<T>;
 }
+

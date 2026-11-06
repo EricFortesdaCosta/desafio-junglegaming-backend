@@ -10,3 +10,4 @@ awslocal sqs create-queue \
   --attributes FifoQueue=true,ContentBasedDeduplication=true
 
 echo "SQS Queues created successfully!"
+

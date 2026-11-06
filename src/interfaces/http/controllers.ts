@@ -200,3 +200,4 @@ export class HttpControllers {
     res.status(200).json({ status: 'READY', postgres: 'UP', sqs: 'UP' });
   }
 }
+

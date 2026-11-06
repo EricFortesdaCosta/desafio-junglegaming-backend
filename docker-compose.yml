@@ -84,3 +84,4 @@ services:
         condition: service_healthy
       localstack:
         condition: service_started
+

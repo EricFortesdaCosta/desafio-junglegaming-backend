@@ -101,3 +101,4 @@ CREATE TABLE IF NOT EXISTS outbox_messages (
 
 CREATE INDEX IF NOT EXISTS idx_outbox_pending ON outbox_messages(published_at, next_attempt_at)
 WHERE published_at IS NULL;
+

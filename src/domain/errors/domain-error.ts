@@ -40,3 +40,4 @@ export class IdempotencyConflictError extends DomainError {
     this.name = 'IdempotencyConflictError';
   }
 }
+

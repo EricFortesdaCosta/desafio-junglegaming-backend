@@ -53,3 +53,4 @@ export class InboxMessage {
     this._processedAt = at;
   }
 }
+

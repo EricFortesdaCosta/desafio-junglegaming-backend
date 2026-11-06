@@ -133,3 +133,4 @@ Se for continuar expandindo o projeto:
 2. **Autenticação (Seção 2)**: Conforme o README, autenticação não vale pontos no desafio, mas caso deseje implementar, pode plugar um `Identity Provider` externo (Keycloak ou Zitadel no docker-compose) ou um `ProviderIdentityPort`.
 3. **Métricas OpenTelemetry / Prometheus**: Expor endpoint `/metrics` com métricas de tempo de lock e outbox lag.
 4. **CI/CD**: Configurar GitHub Actions com linting, `bun test` e verificação do Docker build.
+

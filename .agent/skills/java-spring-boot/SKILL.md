@@ -1,39 +1,86 @@
 ---
 name: java-spring-boot
-description: Enterprise Java 21+ and Spring Boot 3 development practices, Domain-Driven Design (DDD), Clean Architecture, Spring Data JPA with Pessimistic/Optimistic Locking, Testcontainers, and Resilience4j.
+description: Enterprise Java 21+ and Spring Boot 3+ development guide covering modern idioms (Virtual Threads, Records, Pattern Matching), Spring Data JPA performance, transaction management, resilience, and security.
 ---
 
-# Java & Spring Boot Enterprise Guide
+# Java 21 & Spring Boot 3+ Enterprise Guide
 
-This skill documents production-grade patterns for Java 21+ and Spring Boot 3 backends.
+Production-ready guidelines, idioms, and design patterns for building high-throughput, cloud-native enterprise services with modern Java and Spring Boot.
 
-## 1. Domain-Driven Design in Java
+---
 
-- **Value Objects**: Use Java records or immutable classes with private constructors and static factory methods.
-  ```java
-  public record Money(BigDecimal amount, Currency currency) {
-      public Money {
-          Objects.requireNonNull(amount);
-          Objects.requireNonNull(currency);
-          if (amount.scale() > 2) throw new IllegalArgumentException("Scale must not exceed 2");
-      }
-      public Money add(Money other) {
-          assertSameCurrency(other);
-          return new Money(this.amount.add(other.amount), this.currency);
-      }
-  }
-  ```
+## 1. Modern Java 21 Idioms
 
-- **Concurrency & Locking with Spring Data JPA**:
-  ```java
-  @Lock(LockModeType.PESSIMISTIC_WRITE)
-  @Query("SELECT w FROM Wallet w WHERE w.id = :id")
-  Optional<Wallet> findByIdForUpdate(@Param("id") UUID id);
-  ```
+### Use Records for Immutability & DTOs
+Records automatically implement value equality, hashing, and immutability. Perfect for DTOs, API payloads, and query projections:
 
-- **Transactional Boundaries**:
-  - `@Transactional(isolation = Isolation.READ_COMMITTED)`
-  - Outbox pattern with `@TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)` or direct persistence.
+```java
+public record CreateTransactionCommand(
+    @NotNull UUID walletId,
+    @Positive BigDecimal amount,
+    @NotBlank String currency,
+    @NotNull TransactionType type
+) {}
+```
 
-- **Automated Testing with Testcontainers**:
-  - `PostgreSQLContainer` and `LocalStackContainer` for integration testing.
+### Pattern Matching & Sealed Interfaces for Domain State
+Model business states exhaustively without fragile `instanceof` casts:
+
+```java
+public sealed interface TransactionState permits Pending, Confirmed, Failed {}
+
+public record Pending(Instant createdAt) implements TransactionState {}
+public record Confirmed(Instant settledAt, String externalReference) implements TransactionState {}
+public record Failed(String reasonCode, Instant failedAt) implements TransactionState {}
+
+public String describeState(TransactionState state) {
+    return switch (state) {
+        case Pending p   -> "Processing since " + p.createdAt();
+        case Confirmed c -> "Settled at " + c.settledAt();
+        case Failed f    -> "Failed: " + f.reasonCode();
+    };
+}
+```
+
+### Enable Virtual Threads (Project Loom)
+In Spring Boot 3.2+, enable lightweight virtual threads in `application.yml`:
+
+```yaml
+spring:
+  threads:
+    virtual:
+      enabled: true
+```
+
+---
+
+## 2. Spring Data JPA & Performance Tuning
+
+### Avoid the N+1 Query Problem
+Use `@EntityGraph` or constructor DTO projections:
+
+```java
+public interface OrderRepository extends JpaRepository<Order, UUID> {
+    @EntityGraph(attributePaths = {"items", "items.product"})
+    Optional<Order> findWithItemsById(UUID id);
+}
+```
+
+### Pessimistic Locking for Financial Records
+For high-concurrency race conditions (e.g., deducting money from a shared wallet):
+
+```java
+public interface WalletRepository extends JpaRepository<Wallet, UUID> {
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT w FROM Wallet w WHERE w.id = :id")
+    Optional<Wallet> findByIdForUpdate(@Param("id") UUID id);
+}
+```
+
+---
+
+## 3. The Transactional Outbox Pattern in Spring Boot
+
+To achieve dual-write consistency without distributed transactions:
+Mutate the business state (`Wallet`) and save an `OutboxEvent` in the **same DB transaction**.
+A background worker or Debezium CDC reads from `outbox_events` and publishes to Kafka / SQS.

@@ -188,3 +188,4 @@ describe('Transactional Outbox, Deduplication and Out-of-Order Execution Tests',
     ).rejects.toThrow(IdempotencyConflictError);
   });
 });
+

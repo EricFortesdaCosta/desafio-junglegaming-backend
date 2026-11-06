@@ -49,3 +49,4 @@ describe('WalletLedgerEntry Entity', () => {
     ).toThrow(DomainError);
   });
 });
+

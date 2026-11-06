@@ -99,3 +99,4 @@ Em sistemas de mensageria distribuída at-least-once, um evento de estorno (`REF
 | `CURRENCY_MISMATCH` | A moeda informada não coincide com a moeda da carteira ou da referência |
 | `ROUND_MISMATCH` | A rodada informada não coincide com a rodada da referência |
 | `TERMINAL_STATE_VIOLATION` | Tentativa ilegal de alterar uma transação já finalizada |
+
